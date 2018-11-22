@@ -101,7 +101,7 @@ order_usual=order_product.groupby('order_id')['order_item_id'].aggregate('sum').
 order_usual=order_usual['order_item_id'].value_counts()
 order_usual.head()
 
-plt.figure(figsize=(8,8))
+plt.figure(figsize=(6,6))
 ax=sns.barplot(x=order_usual.index,y=order_usual.values,color="green")
 ax.set_xlabel("Number of products added in order")
 ax.set_ylabel("Number of orders")
@@ -117,6 +117,7 @@ most_product = order_product.groupby('product_category_name_english').aggregate(
 most_product.head()
 
 ## Visualizing top 10 most bought product categories
+plt.figure(figsize=(6,6))
 sns.barplot(x='product_category_name_english',y='order_count',data=most_product[:10],color='blue')
 plt.xlabel("Product Category")
 plt.ylabel("Total Number of orders")
