@@ -128,7 +128,13 @@ plt.show()
 order_product['order_purchase_timestamp']=pd.to_datetime(order_product['order_purchase_timestamp'])
 order_product['order_delivered_customer_date']=pd.to_datetime(order_product['order_delivered_customer_date'])
 
-
+# create new columns for date, day, time, month
+order_product['weekday']=order_product['order_purchase_timestamp'].dt.weekday_name 
+order_product['year']=order_product['order_purchase_timestamp'].dt.year
+order_product['monthday']=order_product['order_purchase_timestamp'].dt.day
+order_product['weekday']=order_product['order_purchase_timestamp'].dt.weekday 
+order_product['month']=order_product['order_purchase_timestamp'].dt.month 
+order_product['hour']=order_product['order_purchase_timestamp'].dt.hour
 
 
 
