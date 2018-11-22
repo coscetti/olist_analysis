@@ -137,6 +137,28 @@ order_product['weekday']=order_product['order_purchase_timestamp'].dt.weekday
 order_product['month']=order_product['order_purchase_timestamp'].dt.month 
 order_product['hour']=order_product['order_purchase_timestamp'].dt.hour
 
+# Trend by year
+plt.figure(figsize=(6,6))
+trend_year = pd.DataFrame(order_product.groupby('year')['price'].sum().sort_values(ascending=False)).reset_index()
+ax = sns.barplot(x='year',y='price',data=trend_year,palette=sns.set_palette(palette='viridis_r'))
+ax.set_xlabel("Year")
+ax.set_ylabel("Total Transaction Value")
+ax.set_title("Transaction Value by Year")
+
+## NB: for lack of entire data, we are unable to conclude any significant findings here.
+
+## Boxplot for transaction by year
+plt.figure(figsize=(8,8))
+ax = sns.boxplot(x='year',y='price',data=order_product,palette=sns.set_palette(palette='viridis_r'))
+ax.set_xlabel("Year")
+ax.set_ylabel("Total Value")
+ax.set_title("Box Plot of Transaction by Year")
+
+# We find that most of the transaction fall below BRL 2000. There are more outliers for 2017.
+# Maximum transaction value is around BRL 14000
+
+## Average value of transaction per month
+
 
 
 
