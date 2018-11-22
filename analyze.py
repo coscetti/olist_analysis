@@ -36,7 +36,8 @@ items = pd.read_csv("../olist_data/olist_order_items_dataset.csv") ## items data
 payment = pd.read_csv("../olist_data/olist_order_payments_dataset.csv")  ### Payment dataset
 review = pd.read_csv("../olist_data/olist_order_reviews_dataset.csv") ## review dataset
 sellers=pd.read_csv("../olist_data/olist_sellers_dataset.csv") ## Seller information
-product = pd.read_csv("../olist_data/product_category_name_translation.csv")  ## Product translation to english
+translation = pd.read_csv("../olist_data/product_category_name_translation.csv")  ## Product translation to english
+product = pd.read_csv("../olist_data/olist_products_dataset.csv")
 
 customer.shape
 geo.shape
@@ -45,6 +46,7 @@ items.shape
 payment.shape
 review.shape
 sellers.shape
+translation.shape
 product.shape
 
 ## Joining the order and payment
@@ -52,6 +54,7 @@ order_pay = pd.merge(order, payment, how="left", on=['order_id','order_id'])
 
 ## Joining the order_pay with product category translation
 order_product = pd.merge(order_pay, items, how="left", on=['order_id','order_id'])
+order_product = pd.merge(order_product, product, how="left", on=['product_id','product_id'])
 
 ## Order Summary
 print("Total number of orders in the database:", order['order_id'].nunique())
@@ -71,6 +74,8 @@ print("Median order amount is BRL:",order_product['price'].median())
 value = order_product.groupby('order_id')['price','freight_value'].sum().sort_values(by='price',ascending=False).reset_index()
 value.head()
 
+order_product = order_product[np.isfinite(order_product['price'])]
+
 ## Lets plot a histogram of the price and freight value to understend the skewness of the data
 plt.figure(figsize=(12,10))
 
@@ -85,3 +90,7 @@ g1 = sns.distplot(np.log(order_product['freight_value'] + 1))
 g1.set_title("Freight Value of Orders - Distribution", fontsize=15)
 g1.set_xlabel("")
 g1.set_ylabel("Frequency", fontsize=12)
+
+print("Skewness of the transaction value:",skew(np.log(order_product['price']+1)))
+print("Excess Kurtosis of the transaction value:",kurtosis(np.log(order_product['price']+1)))
+
