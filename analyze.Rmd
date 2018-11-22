@@ -19,4 +19,8 @@ max(order_pay$payment_value)
 min(order_pay$payment_value)
 mean(order_pay$payment_value)
 median(order_pay$payment_value)
+value <- order_product %>% select(order_id, price, freight_value) %>% group_by(order_id) %>% arrange(desc(price,freight_value))
+head(value)
+ 
+
 
