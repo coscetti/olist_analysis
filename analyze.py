@@ -94,3 +94,48 @@ g1.set_ylabel("Frequency", fontsize=12)
 print("Skewness of the transaction value:",skew(np.log(order_product['price']+1)))
 print("Excess Kurtosis of the transaction value:",kurtosis(np.log(order_product['price']+1)))
 
+## NB: order_usual=order.groupby('order_id')['order_items_qty'].aggregate('sum').reset_index()
+
+## Number of products people ususally order
+order_usual=order_product.groupby('order_id')['order_item_id'].aggregate('sum').reset_index()
+order_usual=order_usual['order_item_id'].value_counts()
+order_usual.head()
+
+plt.figure(figsize=(8,8))
+ax=sns.barplot(x=order_usual.index,y=order_usual.values,color="green")
+ax.set_xlabel("Number of products added in order")
+ax.set_ylabel("Number of orders")
+ax.set_title("Number of products people usually order")
+ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
+
+## Most bought product category
+order_product.shape
+order_product = pd.merge(order_product,translation,on='product_category_name',how='left')
+order_product.shape
+
+most_product = order_product.groupby('product_category_name_english').aggregate({'order_id':'count'}).rename(columns={'order_id':'order_count'}).sort_values(by='order_count',ascending=False).reset_index()
+most_product.head()
+
+## Visualizing top 10 most bought product categories
+sns.barplot(x='product_category_name_english',y='order_count',data=most_product[:10],color='blue')
+plt.xlabel("Product Category")
+plt.ylabel("Total Number of orders")
+plt.title("Most bought product categories")
+plt.xticks(rotation='vertical')
+plt.show()
+
+## Order Trend
+order_product['order_purchase_timestamp']=pd.to_datetime(order_product['order_purchase_timestamp'])
+order_product['order_delivered_customer_date']=pd.to_datetime(order_product['order_delivered_customer_date'])
+
+
+
+
+
+
+
+
+
+
+
+
