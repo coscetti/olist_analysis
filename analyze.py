@@ -425,3 +425,16 @@ top_15.sort_values(by='product_count',ascending=False,inplace=True)
 top_15.head(15)
 
 ## There are 27 products sold by one seller. Overall the top 15 sellers by product count have 13 to 27 products in their portfolio.
+
+#############################
+## Summary :
+#############################
+# The following are some of the key points noted from the Olist E commerce analysis.
+
+# Maximum order amount is BRL 13440 and Minumum order amount is BRL 2.
+# Most of the time,the number of products ordered has always been < 3 .Bed Bath table,health beauty,sports are some categories that are bought most often by the customers.
+# The frequency of the orders has been higher on Mon,Tue whereas the frequency of orders is low during Saturday and sundays.
+# In a day,the number of transactions happening rises after 11 and continues till 22:00 Hrs.
+# Average time taken for delivery is a week and maximum has gone up to 1.5 months.
+# Credit card,boleto have been used for transactions of high value whereas people prefer using vouchers for low transaction values.
+# The anonymised seller data tells that the top 15 sellers with maximum portfolio of products have 13 to 21 products in their category .
