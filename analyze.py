@@ -406,5 +406,22 @@ plt.show()
 # Debit card and vouchers are not used much and there are two modes dominating the distribution plot.
 
 ## Analysis on Sellers:
-order_pay=pd.merge(order_product,sellers,how='left',on=['order_id','product_id'])
+order_pay = pd.merge(product,items,how='left',on=['product_id','product_id'])
+order_pay = pd.merge(order_pay,sellers,how='left',on=['seller_id','seller_id'])
 order_pay.shape
+
+plt.figure(figsize=(18,6))
+ax = sns.barplot(order_pay['seller_id'].value_counts()[:15].index,order_pay['seller_id'].value_counts()[:15].values,palette='Set2')
+ax.set_title('Top 15 sellers in Olist')
+ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
+plt.show()
+
+# Lets see the top 3 products sold by each of these sellers.
+top_15 = order_pay.groupby('seller_id').apply(lambda x:x['product_category_name'].unique()).to_frame().reset_index()
+top_15.columns = ['seller_id','products']
+top_15['product_count']=[len(c) for c in top_15['products']]
+top_15.sort_values(by='product_count',ascending=False,inplace=True)
+
+top_15.head(15)
+
+## There are 27 products sold by one seller. Overall the top 15 sellers by product count have 13 to 27 products in their portfolio.
