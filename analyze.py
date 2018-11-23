@@ -229,3 +229,40 @@ plt.ylabel('Order Count', fontsize=12)
 plt.xlabel('Average Value of Transaction', fontsize=12)
 plt.show()
 
+## Order trend by hour
+trend_hour = order_product.groupby('hour').agg({'order_id':'count'}).rename(columns={'order_id':'freq_order'}).reset_index()
+
+plt.figure(figsize=(10,7))
+ax = sns.barplot(x=trend_hour['hour'],y=trend_hour['freq_order'],color='red')
+ax.set_xlabel("Hour of the day")
+ax.set_ylabel("Order Count")
+ax.set_title("Frequency of transaction over the hour")
+
+## From the plot we see that the frequency of the order steadly rises as the day progresses and reaches the peak after noon 
+## and continues till 22 hrs . There is a dip in the transaction during evening time between 18-19 hrs and it sees a rise 
+## after that .
+
+## Frequency of orders during the hour over the day
+day_hour = order_product.groupby(['weekday','hour']).agg({'order_id':'count'}).rename(columns={'order_id':'freq'}).reset_index()
+
+day_hour.weekday = day_hour.weekday.map(weekmap)
+day_hour.head()
+
+# Sorting it so that the plot order is correct
+day_hour['weekday'] = pd.Categorical(day_hour['weekday'], categories=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],ordered=True)
+
+day_hour = day_hour.pivot('weekday','hour','freq')
+
+plt.figure(figsize=(15,8))
+ax = sns.heatmap(day_hour,annot=True,fmt="d",cmap='OrRd')
+ax.set_xlabel("Hour")
+ax.set_ylabel("Day")
+ax.set_title("Heatmap of transaction over the hour by day", size=10)
+
+## Some evaluations
+# As the day progresses,the number of orders placed increases .
+# There is clearly a difference in the order frequency between 
+# weekdays and weekends .
+# While during weekdays , the order frequency increases steadly 
+# after 9 AM , the order frequency picks up only after 15:00 hrs during sundays .
+
