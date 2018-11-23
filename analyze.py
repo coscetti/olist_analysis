@@ -266,3 +266,145 @@ ax.set_title("Heatmap of transaction over the hour by day", size=10)
 # While during weekdays , the order frequency increases steadly 
 # after 9 AM , the order frequency picks up only after 15:00 hrs during sundays .
 
+order_product = pd.merge(order_product, customer, how="left", on=['customer_id','customer_id'])
+
+trans_state = pd.DataFrame(order_product.groupby('customer_state').agg({'price':'mean'}).rename(columns={'price':'avg_trans'}).sort_values(by='avg_trans',ascending=False)).reset_index()
+
+plt.figure(figsize=(10,7))
+ax = sns.barplot(x='customer_state',y='avg_trans',data=trans_state,palette=sns.color_palette(palette="viridis_r"))
+ax.set_xlabel('Customer State')
+ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
+ax.set_ylabel('Avg transaction value')
+ax.set_title("Average Transaction Value for each state")
+
+## States Acre,Rondonia,Alagoas have a higher transaction value whereas Sao Paulo ,Minas Gerias have the lowest average transaction.
+
+### By City :
+trans_city = pd.DataFrame(order_product.groupby('customer_city').agg({'price':'mean'}).rename(columns={'price':'avg_trans'}).sort_values(by='avg_trans',ascending=False)).reset_index()
+trans_city[:10]
+
+plt.figure(figsize=(10,7))
+ax = sns.barplot(x='customer_city',y='avg_trans',data=trans_city[:10],palette=sns.color_palette(palette="Set2"))
+ax.set_xlabel('Customer City')
+ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
+ax.set_ylabel('Avg transaction value')
+ax.set_title("Top 10 - Average Transaction Value for each City")
+
+## Order delivery
+# Check the average number of days between order and delivery
+
+order_product['order_delivered_customer_date']=pd.to_datetime(order_product['order_delivered_customer_date'])
+order_product['order_purchase_timestamp']=pd.to_datetime(order_product['order_purchase_timestamp'])
+
+order_product['day_to_delivery']=(order_product['order_delivered_customer_date']-order_product['order_purchase_timestamp']).dt.days
+print("Average days to delivery {}".format(np.round(order_product['day_to_delivery'].mean(),0)))
+
+## Overall scenario
+
+delivery = order_product.groupby('day_to_delivery')['order_id'].aggregate({'order_id':'count'}).rename(columns={'order_id':'freq'}).reset_index().dropna()
+delivery['freq']=delivery['freq'].astype(int)
+
+plt.figure(figsize=(20,10))
+sns.barplot(x='day_to_delivery',y='freq',data=delivery,color="blue")
+plt.title("Days to delivery")
+plt.xlabel("Days")
+plt.xticks(rotation="vertical")
+plt.ylabel("Number of orders")
+plt.show()
+
+## A majority of the orders are getting delivered within a week whereas there were few orders that is taking over 1.5 months too.
+
+## Payments :
+# check the mode of payments used for transaction
+
+pay_type = payment.groupby('payment_type').aggregate({'order_id':'count'}).rename(columns={'order_id':'count'}).sort_values(by='count',ascending=False).reset_index()
+
+pay_type['perc'] = np.round((pay_type['count']/pay_type['count'].sum())*100,2)
+
+plt.figure(figsize=(8,8))
+ax = sns.barplot(x='payment_type',y='count',data=pay_type,color='cyan')
+plt.title("Mode of Payment")
+plt.xlabel('Payment Type')
+plt.ylabel('Number of instances')
+
+## A large number of online buyers use credit card their prefered mode of payment followed by boleto. 
+# According to wiki, boleto is a a payment method in Brazil regulated by FEBRABAN, short for Brazilian Federation of Banks. 
+# A boleto can be paid at ATMs, branch facilities and internet banking of any Bank, Post Office, Lottery Agent 
+# and some supermarkets until its due date. After the due date it can only be paid at the issuer bank facilities.
+
+## Check the average value of transaction used for each type of payment. 
+print("Average value of transaction on credit card : BRL {:,.0f}".format(np.mean(payment[payment.payment_type=='credit_card']['payment_value'])))
+print("Average value of transaction on boleto : BRL {:,.0f}".format(np.mean(payment[payment.payment_type=='boleto']['payment_value'])))
+print("Average value of transaction on voucher: BRL {:,.0f}".format(np.mean(payment[payment.payment_type=='voucher']['payment_value'])))
+print("Average value of transaction on debit card: BRL {:,.0f}".format(np.mean(payment[payment.payment_type=='debit_card']['payment_value'])))
+
+## For each of the transaction types , the value at the quantiles is printed out for better interpretation . 
+# Distribution and box plot is also tried out for visualisation purpose.
+
+print("Credit Card quantiles")
+print(payment[payment.payment_type=='credit_card']['payment_value'].quantile([.01,.25,.5,.75,.99]))
+print("")
+print("Boleto quantiles")
+print(payment[payment.payment_type=='boleto']['payment_value'].quantile([.01,.25,.5,.75,.99]))
+print("")
+print("Voucher quantiles")
+print(payment[payment.payment_type=='voucher']['payment_value'].quantile([.01,.25,.5,.75,.99]))
+print("")
+print("Debit Card quantiles")
+print(payment[payment.payment_type=='debit_card']['payment_value'].quantile([.01,.25,.5,.75,.99]))
+
+## For transactions greater than BRL 100, people use debit card, boleto or credit card. 
+# For transaction of higher value, people have used credit mode of payment followed by boleto and then debit card. 
+# The preference of using vouchers for transaction is on the lower side. 
+
+## Lets check the distribution of the transactions.
+
+plt.figure(figsize=(10,8))
+ax = sns.boxplot(x=payment.payment_type,y=payment.payment_value,palette=sns.color_palette(palette="viridis_r"))
+ax.set_title("Boxplot for different payment type")
+ax.set_xlabel("Transaction type")
+ax.set_ylabel("Transaction Value")
+ax.set_xticklabels(ax.get_xticklabels(),rotation=90)
+
+payment = payment[payment['payment_value']!=0]
+plt.figure(figsize=(10,8))
+plt.subplot(221)
+ax = sns.distplot(np.log(payment[payment.payment_type=='credit_card']['payment_value'])+1,color="red")
+ax.set_xlabel("Log Transaction value (BRL)")
+ax.set_ylabel("Frequency")
+ax.set_title("Distribution plot for credit card transactions")
+
+plt.subplot(222)
+ax1 = sns.distplot(np.log(payment[payment.payment_type=='boleto']['payment_value'])+1,color="red")
+ax1.set_xlabel("Log Transaction value (BRL)")
+ax1.set_ylabel("Frequency")
+ax1.set_title("Distribution plot for boleto transactions")
+
+plt.subplot(223)
+ax2 = sns.distplot(np.log(payment[payment.payment_type=='debit_card']['payment_value'])+1,color="red")
+ax2.set_xlabel("Log Transaction value (BRL)")
+ax2.set_ylabel("Frequency")
+ax2.set_title("Distribution plot for debit card transactions")
+
+plt.subplot(224)
+ax3 = sns.distplot(np.log(payment[payment.payment_type=='voucher']['payment_value'])+1,color="red")
+ax3.set_xlabel("Log Transaction value (BRL)")
+ax3.set_ylabel("Frequency")
+ax3.set_title("Distribution plot for voucher transactions")
+
+
+plt.subplots_adjust(wspace = 0.5, hspace = 0.5, top = 1.3)
+
+plt.show()
+
+## From the distribution & box plot we understand the following
+
+# The distribution for credit card type of transaction is nearly normal and from the boxplot it is seen that 
+# there are extreme outliers in this case. This means that for higher value of transactions, people prefer to buy on credit and pay later. 
+# Transaction through boleto is multimodal and seems to be for lesser value of BRL and here too the transactions are dominated by outliers. 
+# There seems to be a significant difference between credit card and boleto type of transactions. 
+# Debit card and vouchers are not used much and there are two modes dominating the distribution plot.
+
+## Analysis on Sellers:
+order_pay=pd.merge(order_product,sellers,how='left',on=['order_id','product_id'])
+order_pay.shape
