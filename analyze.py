@@ -158,8 +158,39 @@ ax.set_title("Box Plot of Transaction by Year")
 # Maximum transaction value is around BRL 14000
 
 ## Average value of transaction per month
+trend_month = pd.DataFrame(order_product.groupby('month').agg({'price':'mean'}).rename(columns={'price':'mean_transaction'})).reset_index()
+x1 = trend_month.month.tolist()
+y1 = trend_month.mean_transaction.tolist()
+mapp = {}
+for m, v in zip(x1, y1):
+    mapp[m] = v
+xn = [calendar.month_abbr[int(x)] for x in sorted(x1)]
+vn = [mapp[x] for x in sorted(x1)]
 
+plt.figure(figsize=(10,7))
+ax = sns.barplot(x=xn,y=vn,color='#ed5569')
+ax.set_xlabel("Month")
+ax.set_ylabel("Value")
+ax.set_title("Average value of transaction per month")
 
+## Average value of transaction by day of the week
+trend_weekday = pd.DataFrame(order_product.groupby('weekday').agg({'price':'mean'}).rename(columns={'price':'mean_transaction'})).reset_index()
+x2 = trend_weekday.index.tolist()
+y2 = trend_weekday.mean_transaction.tolist()
+
+weekmap = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu', 4:'Fri', 5:'Sat', 6:'Sun'}
+x2 = [weekmap[x] for x in x2]
+wkmp = {}
+for j, x in enumerate(x2):
+    wkmp[x] = y2[j]
+order_week = list(weekmap.values())
+ordervals = [wkmp[val] for val in order_week]
+
+plt.figure(figsize=(10,7))
+ax = sns.barplot(x=order_week,y=ordervals,color='#ed5569')
+ax.set_xlabel("Day")
+ax.set_ylabel("Value")
+ax.set_title("Average value of transaction by day of the week")
 
 
 
