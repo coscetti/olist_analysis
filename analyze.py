@@ -192,10 +192,40 @@ ax.set_xlabel("Day")
 ax.set_ylabel("Value")
 ax.set_title("Average value of transaction by day of the week")
 
+## NB: There seems to be not much trend observed during the day of the transaction. 
+## Lets check the frequency of the orders
 
+freq_weekday = pd.DataFrame(order_product.groupby('weekday').agg({'order_id':'count'}).rename(columns={'order_id':'order_count'})).reset_index()
 
+x3 = freq_weekday.index.tolist()
+y3 = freq_weekday.order_count.tolist()
 
+weekmap = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu', 4:'Fri', 5:'Sat', 6:'Sun'}
+x3 = [weekmap[x] for x in x3]
+wkmp = {}
+for j, x in enumerate(x3):
+    wkmp[x] = y3[j]
+order_week = list(weekmap.values())
+ordervals = [wkmp[val] for val in order_week]
 
+plt.figure(figsize=(10,7))
+ax = sns.barplot(x=order_week,y=ordervals,palette=sns.color_palette(palette='Set2'))
+ax.set_xlabel("Day")
+ax.set_ylabel("Value")
+ax.set_title("Total Number of orders by day of the week")
 
+## The frequency of the orders has been higher on Mon,Tue whereas the freq of orders is 
+## low during Saturday and sundays. 
+## This means that during weekend people are not interested in online shopping going only 
+## by the frequency of the orders but combining this with the average value of transactions 
+## during the day there is a relatively high average value of transaction happening during 
+## saturdays compared to other days.
 
+week = pd.merge(trend_weekday,freq_weekday,on='weekday',how='inner')
+
+plt.figure(figsize=(8,8))
+sns.jointplot(x='mean_transaction', y='order_count', data=week, size=10, color='red')
+plt.ylabel('Order Count', fontsize=12)
+plt.xlabel('Average Value of Transaction', fontsize=12)
+plt.show()
 
